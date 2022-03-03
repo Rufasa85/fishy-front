@@ -32,7 +32,7 @@ function App() {
 
   const logMeIn = (e) => {
     e.preventDefault()
-    API.login()
+    API.login(loginInfo.email,loginInfo.password)
       .then(data => {
         console.log(data);
         setUserId(data.user.id);
