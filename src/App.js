@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
+import {BrowserRouter as Router, Routes, Route, Link} from "react-router-dom";
+import API from "./utils/API"
+import Home from "./pages/Home";
+import TankDetail from "./pages/TankDetail";
+import Navbar from "./components/Navbar";
 function App() {
-  const [fish, setFish] = useState([]);
   const [userEmail, setUserEmail] = useState("");
   const [userId, setUserId] = useState(0);
   const [token, setToken] = useState("");
@@ -11,24 +15,9 @@ function App() {
   })
 
   useEffect(() => {
-    fetch("http://localhost:3001/api/fish")
-      .then(res => res.json())
-      .then(data => {
-        setFish(data);
-      })
-      .catch(err => {
-        console.log(err);
-      });
-  }, []);
-  useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
-      fetch("http://localhost:3001/gettokendata", {
-        headers: {
-          authorization: `Bearer ${token}`
-        }
-      })
-        .then(res => res.json())
+      API.getTokenData(token)
         .then(data => {
           console.log(data);
           setUserId(data.id);
@@ -43,19 +32,7 @@ function App() {
 
   const logMeIn = (e) => {
     e.preventDefault()
-    fetch("http://localhost:3001/login", {
-      method: "POST",
-      body: JSON.stringify({
-        email: loginInfo.email,
-        password: loginInfo.password
-      }),
-      headers: {
-        "Content-Type": "application/json"
-      }
-    })
-      .then(res => {
-        return res.json();
-      })
+    API.login()
       .then(data => {
         console.log(data);
         setUserId(data.user.id);
@@ -84,23 +61,13 @@ function App() {
 
   return (
     <>
-      <h1>Hello</h1>
-      {userEmail ? (
-        <div>
-
-        <h2>Welcome to the club, {userEmail}</h2>
-        <button onClick={logMeOut}>LogOut</button>
-        </div>
-      ) : (
-        <form onSubmit={logMeIn}>
-          <input value={loginInfo.email} onChange={handleInputChange} name="email"/>
-          <input value={loginInfo.password} onChange={handleInputChange} name="password"/>
-        <button >Login</button>
-        </form>
-      )}
-      {fish.map(fishy => (
-        <h2 key={fishy.id}>{fishy.name}</h2>
-      ))}
+      <Router>
+        <Navbar logMeOut={logMeOut} logMeIn={logMeIn} userEmail={userEmail} loginInfo={loginInfo} handleInputChange={handleInputChange}/>
+      <Routes>
+        <Route path="/" element={<Home/>}/>
+        <Route path="/tanks/:id" element={<TankDetail/>}/>
+        </Routes>
+        </Router>
     </>
   );
 }
