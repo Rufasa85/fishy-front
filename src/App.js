@@ -5,6 +5,11 @@ function App() {
   const [userId, setUserId] = useState(0);
   const [token, setToken] = useState("");
 
+  const [loginInfo, setLoginInfo] = useState({
+    email:"",
+    password:""
+  })
+
   useEffect(() => {
     fetch("http://localhost:3001/api/fish")
       .then(res => res.json())
@@ -36,12 +41,13 @@ function App() {
     }
   }, []);
 
-  const logMeIn = () => {
+  const logMeIn = (e) => {
+    e.preventDefault()
     fetch("http://localhost:3001/login", {
       method: "POST",
       body: JSON.stringify({
-        email: "joe@joe.joe",
-        password: "password"
+        email: loginInfo.email,
+        password: loginInfo.password
       }),
       headers: {
         "Content-Type": "application/json"
@@ -56,6 +62,8 @@ function App() {
         setUserEmail(data.user.email);
         setToken(data.token);
         localStorage.setItem("token", data.token);
+      }).catch(err=>{
+        console.log(err);
       });
   };
 
@@ -64,6 +72,14 @@ function App() {
     setUserId(0);
     setUserEmail("");
     setToken("");
+  }
+
+  const handleInputChange = e=>{
+    console.log(e.target.name,e.target.value)
+    setLoginInfo({
+      ...loginInfo,
+      [e.target.name]:e.target.value
+    })
   }
 
   return (
@@ -76,7 +92,11 @@ function App() {
         <button onClick={logMeOut}>LogOut</button>
         </div>
       ) : (
-        <button onClick={logMeIn}>Login</button>
+        <form onSubmit={logMeIn}>
+          <input value={loginInfo.email} onChange={handleInputChange} name="email"/>
+          <input value={loginInfo.password} onChange={handleInputChange} name="password"/>
+        <button >Login</button>
+        </form>
       )}
       {fish.map(fishy => (
         <h2 key={fishy.id}>{fishy.name}</h2>
